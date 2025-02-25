@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced To-Do List</title>
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3a0ca3;
+            --success-color: #06d6a0;
+            --danger-color: #ef476f;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --gray-color: #adb5bd;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--dark-color);
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+        }
+        
+        h1, h2 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+        
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        .tasks-container {
+            margin-top: 30px;
+        }
+        
+        .task-filters {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        
+        .task-status {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .status-pill {
+            padding: 5px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            background-color: var(--light-color);
+        }
+        
+        .status-pill.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .task-item {
+            background: var(--light-color);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: fadeIn 0.5s;
+            border-left: 5px solid var(--primary-color);
+        }
+        
+        .task-item.completed {
+            border-left-color: var(--success-color);
+            opacity: 0.7;
+        }
+        
+        .task-item.high-priority {
+            border-left-color: var(--danger-color);
+        }
+        
+        .task-content {
+            flex-grow: 1;
+        }
+        
+        .task-title {
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .task-item.completed .task-title {
+            text-decoration: line-through;
+            color: var(--gray-color);
+        }
+        
+        .task-meta {
+            display: flex;
+            font-size: 12px;
+            color: var(--gray-color);
+            margin-top: 5px;
+        }
+        
+        .task-priority, .task-due-date {
+            margin-right: 15px;
+        }
+        
+        .task-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .task-action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            width: auto;
+            padding: 5px;
+            color: var(--gray-color);
+            transition: color 0.3s;
+        }
+        
+        .complete-btn:hover {
+            color: var(--success-color);
+        }
+        
+        .edit-btn:hover {
+            color: var(--primary-color);
+        }
+        
+        .delete-btn:hover {
+            color: var(--danger-color);
+        }
+        
+        .no-tasks {
+            text-align: center;
+            padding: 20px;
+            color: var(--gray-color);
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            text-align: center;
+        }
+        
+        .stat-box {
+            padding: 10px;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: var(--gray-color);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        #notificationBanner {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transform: translateX(150%);
+            transition: transform 0.3s ease-out;
+            z-index: 1000;
+        }
+        
+        #notificationBanner.show {
+            transform: translateX(0);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .task-filters {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Task Master</h1>
+        
+        <div class="form-group">
+            <label for="email">Your Email</label>
+            <input type="email" id="email" placeholder="Enter your email for notifications">
+            <button id="saveEmailBtn" style="margin-top: 10px;">Save Email</button>
+        </div>
+        
+        <div class="tasks-container">
+            <h2>Your Tasks</h2>
+            
+            <div class="task-filters">
+                <div class="task-status">
+                    <div class="status-pill active" data-filter="all">All</div>
+                    <div class="status-pill" data-filter="active">Active</div>
+                    <div class="status-pill" data-filter="completed">Completed</div>
+                </div>
+                <select id="sortTasks">
+                    <option value="dateAdded">Date Added</option>
+                    <option value="priority">Priority</option>
+                    <option value="dueDate">Due Date</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <input type="text" id="taskInput" placeholder="What do you need to do?">
+            </div>
+            
+            <div class="form-group">
+                <div style="display: flex; gap: 10px;">
+                    <select id="taskPriority" style="flex: 1;">
+                        <option value="low">Low Priority</option>
+                        <option value="medium" selected>Medium Priority</option>
+                        <option value="high">High Priority</option>
+                    </select>
+                    <input type="date" id="taskDueDate" style="flex: 1;">
+                </div>
+                <button id="addTaskBtn" style="margin-top: 10px;">Add Task</button>
+            </div>
+            
+            <ul id="taskList"></ul>
+            
+            <div id="noTasks" class="no-tasks">
+                <p>You have no tasks yet. Add one to get started!</p>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="stat-number" id="totalTasks">0</div>
+                    <div class="stat-label">Total</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number" id="completedTasks">0</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number" id="pendingTasks">0</div>
+                    <div class="stat-label">Pending</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="notificationBanner"></div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // DOM Elements
+            const emailInput = document.getElementById("email");
+            const saveEmailBtn = document.getElementById("saveEmailBtn");
+            const taskInput = document.getElementById("taskInput");
+            const taskPriority = document.getElementById("taskPriority");
+            const taskDueDate = document.getElementById("taskDueDate");
+            const addTaskBtn = document.getElementById("addTaskBtn");
+            const taskList = document.getElementById("taskList");
+            const noTasksMsg = document.getElementById("noTasks");
+            const statusPills = document.querySelectorAll(".status-pill");
+            const sortSelect = document.getElementById("sortTasks");
+            const totalTasksEl = document.getElementById("totalTasks");
+            const completedTasksEl = document.getElementById("completedTasks");
+            const pendingTasksEl = document.getElementById("pendingTasks");
+            const notificationBanner = document.getElementById("notificationBanner");
+            
+            // Set minimum due date to today
+            const today = new Date().toISOString().split('T')[0];
+            taskDueDate.setAttribute('min', today);
+            taskDueDate.value = today;
+            
+            // Current filter and sort options
+            let currentFilter = "all";
+            let currentSort = "dateAdded";
+            
+            // Load saved data
+            loadEmail();
+            loadAndDisplayTasks();
+            
+            // Event listeners
+            saveEmailBtn.addEventListener("click", saveEmail);
+            addTaskBtn.addEventListener("click", addTask);
+            
+            taskInput.addEventListener("keypress", function(e) {
+                if (e.key === "Enter") {
+                    addTask();
+                }
+            });
+            
+            statusPills.forEach(pill => {
+                pill.addEventListener("click", function() {
+                    statusPills.forEach(p => p.classList.remove("active"));
+                    this.classList.add("active");
+                    currentFilter = this.dataset.filter;
+                    filterAndSortTasks();
+                });
+            });
+            
+            sortSelect.addEventListener("change", function() {
+                currentSort = this.value;
+                filterAndSortTasks();
+            });
+            
+            // Functions
+            function saveEmail() {
+                const email = emailInput.value.trim();
+                if (!email) {
+                    showNotification("Please enter a valid email");
+                    return;
+                }
+                
+                if (!validateEmail(email)) {
+                    showNotification("Please enter a valid email format");
+                    return;
+                }
+                
+                localStorage.setItem("userEmail", email);
+                showNotification("Email saved successfully!");
+            }
+            
+            function loadEmail() {
+                const savedEmail = localStorage.getItem("userEmail");
+                if (savedEmail) {
+                    emailInput.value = savedEmail;
+                }
+            }
+            
+            function addTask() {
+                const taskText = taskInput.value.trim();
+                if (taskText === "") {
+                    showNotification("Please enter a task");
+                    return;
+                }
+                
+                const priority = taskPriority.value;
+                const dueDate = taskDueDate.value || today;
+                const newTask = {
+                    id: Date.now().toString(),
+                    text: taskText,
+                    completed: false,
+                    priority: priority,
+                    dueDate: dueDate,
+                    createdAt: new Date().toISOString()
+                };
+                
+                const tasks = getTasksFromStorage();
+                tasks.push(newTask);
+                saveTasksToStorage(tasks);
+                
+                // Reset inputs
+                taskInput.value = "";
+                taskPriority.value = "medium";
+                taskDueDate.value = today;
+                
+                // Update UI
+                loadAndDisplayTasks();
+                showNotification("Task added successfully!");
+                
+                // Set reminder notification
+                scheduleTaskReminder(newTask);
+            }
+            
+            function loadAndDisplayTasks() {
+                const tasks = getTasksFromStorage();
+                updateTaskStats(tasks);
+                filterAndSortTasks();
+            }
+            
+            function filterAndSortTasks() {
+                const tasks = getTasksFromStorage();
+                
+                // Apply filter
+                let filteredTasks = [];
+                if (currentFilter === "all") {
+                    filteredTasks = [...tasks];
+                } else if (currentFilter === "active") {
+                    filteredTasks = tasks.filter(task => !task.completed);
+                } else if (currentFilter === "completed") {
+                    filteredTasks = tasks.filter(task => task.completed);
+                }
+                
+                // Apply sort
+                if (currentSort === "dateAdded") {
+                    filteredTasks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                } else if (currentSort === "priority") {
+                    const priorityOrder = { high: 0, medium: 1, low: 2 };
+                    filteredTasks.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+                } else if (currentSort === "dueDate") {
+                    filteredTasks.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+                }
+                
+                displayTasks(filteredTasks);
+            }
+            
+            function displayTasks(tasks) {
+                taskList.innerHTML = "";
+                
+                if (tasks.length === 0) {
+                    noTasksMsg.classList.remove("hidden");
+                } else {
+                    noTasksMsg.classList.add("hidden");
+                    
+                    tasks.forEach(task => {
+                        const li = document.createElement("li");
+                        li.className = `task-item ${task.completed ? "completed" : ""} ${task.priority === "high" ? "high-priority" : ""}`;
+                        
+                        const formattedDate = formatDate(task.dueDate);
+                        const isOverdue = !task.completed && new Date(task.dueDate) < new Date().setHours(0, 0, 0, 0);
+                        
+                        li.innerHTML = `
+                            <div class="task-content">
+                                <div class="task-title">${task.text}</div>
+                                <div class="task-meta">
+                                    <span class="task-priority">Priority: ${capitalize(task.priority)}</span>
+                                    <span class="task-due-date" ${isOverdue ? 'style="color: var(--danger-color);"' : ''}>
+                                        Due: ${formattedDate} ${isOverdue ? '(Overdue)' : ''}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="task-actions">
+                                <button class="task-action-btn complete-btn" title="${task.completed ? 'Mark as incomplete' : 'Mark as complete'}">
+                                    ${task.completed ? '↩' : '✓'}
+                                </button>
+                                <button class="task-action-btn edit-btn" title="Edit task">✎</button>
+                                <button class="task-action-btn delete-btn" title="Delete task">✕</button>
+                            </div>
+                        `;
+                        
+                        // Add event listeners to action buttons
+                        li.querySelector(".complete-btn").addEventListener("click", () => toggleTaskComplete(task.id));
+                        li.querySelector(".edit-btn").addEventListener("click", () => editTask(task.id));
+                        li.querySelector(".delete-btn").addEventListener("click", () => deleteTask(task.id));
+                        
+                        taskList.appendChild(li);
+                    });
+                }
+            }
+            
+            function toggleTaskComplete(taskId) {
+                const tasks = getTasksFromStorage();
+                const taskIndex = tasks.findIndex(task => task.id === taskId);
+                
+                if (taskIndex !== -1) {
+                    tasks[taskIndex].completed = !tasks[taskIndex].completed;
+                    saveTasksToStorage(tasks);
+                    loadAndDisplayTasks();
+                    
+                    const status = tasks[taskIndex].completed ? "completed" : "active";
+                    showNotification(`Task marked as ${status}`);
+                }
+            }
+            
+            function editTask(taskId) {
+                const tasks = getTasksFromStorage();
+                const task = tasks.find(task => task.id === taskId);
+                
+                if (task) {
+                    taskInput.value = task.text;
+                    taskPriority.value = task.priority;
+                    taskDueDate.value = task.dueDate;
+                    
+                    // Change add button to update button
+                    addTaskBtn.textContent = "Update Task";
+                    addTaskBtn.onclick = function() {
+                        task.text = taskInput.value.trim();
+                        task.priority = taskPriority.value;
+                        task.dueDate = taskDueDate.value;
+                        
+                        saveTasksToStorage(tasks);
+                        
+                        // Reset form
+                        taskInput.value = "";
+                        taskPriority.value = "medium";
+                        taskDueDate.value = today;
+                        addTaskBtn.textContent = "Add Task";
+                        addTaskBtn.onclick = addTask;
+                        
+                        loadAndDisplayTasks();
+                        showNotification("Task updated successfully!");
+                    };
+                }
+            }
+            
+            function deleteTask(taskId) {
+                const tasks = getTasksFromStorage();
+                const updatedTasks = tasks.filter(task => task.id !== taskId);
+                saveTasksToStorage(updatedTasks);
+                loadAndDisplayTasks();
+                showNotification("Task deleted");
+            }
+            
+            function getTasksFromStorage() {
+                return JSON.parse(localStorage.getItem("tasks")) || [];
+            }
+            
+            function saveTasksToStorage(tasks) {
+                localStorage.setItem("tasks", JSON.stringify(tasks));
+            }
+            
+            function updateTaskStats(tasks) {
+                const total = tasks.length;
+                const completed = tasks.filter(task => task.completed).length;
+                const pending = total - completed;
+                
+                totalTasksEl.textContent = total;
+                completedTasksEl.textContent = completed;
+                pendingTasksEl.textContent = pending;
+            }
+            
+            function showNotification(message) {
+                notificationBanner.textContent = message;
+                notificationBanner.classList.add("show");
+                
+                setTimeout(() => {
+                    notificationBanner.classList.remove("show");
+                }, 3000);
+            }
+            
+            function scheduleTaskReminder(task) {
+                // Only schedule if we have the user's email and the task is not completed
+                if (!task.completed) {
+                    const dueDate = new Date(task.dueDate);
+                    const now = new Date();
+                    
+                    // If due date is today, remind in 1 hour
+                    if (dueDate.toDateString() === now.toDateString()) {
+                        setTimeout(() => {
+                            showTaskReminder(task);
+                        }, 3600000); // 1 hour
+                    } 
+                    // If due date is tomorrow, remind tonight
+                    else if (dueDate.toDateString() === new Date(now.getTime() + 86400000).toDateString()) {
+                        const reminderTime = new Date();
+                        reminderTime.setHours(20, 0, 0, 0); // 8 PM
+                        
+                        const delay = Math.max(0, reminderTime.getTime() - now.getTime());
+                        setTimeout(() => {
+                            showTaskReminder(task);
+                        }, delay);
+                    }
+                    // If due date is in the future, remind 1 day before
+                    else if (dueDate > now) {
+                        const oneDayBefore = new Date(dueDate.getTime() - 86400000);
+                        oneDayBefore.setHours(9, 0, 0, 0); // 9 AM
+                        
+                        const delay = Math.max(0, oneDayBefore.getTime() - now.getTime());
+                        if (delay < 2147483647) { // Max setTimeout value
+                            setTimeout(() => {
+                                showTaskReminder(task);
+                            }, delay);
+                        }
+                    }
+                }
+            }
+            
+            function showTaskReminder(task) {
+                // Check if task still exists and is not completed
+                const tasks = getTasksFromStorage();
+                const currentTask = tasks.find(t => t.id === task.id);
+                
+                if (currentTask && !currentTask.completed) {
+                    showNotification(`Reminder: "${task.text}" is due on ${formatDate(task.dueDate)}`);
+                }
+            }
+            
+            // Helper functions
+            function validateEmail(email) {
+                const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return re.test(email);
+            }
+            
+            function formatDate(dateString) {
+                const options = { weekday: 'short', month: 'short', day: 'numeric' };
+                return new Date(dateString).toLocaleDateString(undefined, options);
+            }
+            
+            function capitalize(string) {
+                return string.charAt(0).toUpperCase() + string.slice(1);
+            }
+            
+            // Check for overdue tasks on load
+            function checkOverdueTasks() {
+                const tasks = getTasksFromStorage();
+                const today = new Date().setHours(0, 0, 0, 0);
+                const overdueTasks = tasks.filter(task => 
+                    !task.completed && new Date(task.dueDate) < today
+                );
+                
+                if (overdueTasks.length > 0) {
+                    showNotification(`You have ${overdueTasks.length} overdue tasks!`);
+                }
+            }
+            
+            // Initialize
+            checkOverdueTasks();
+        });
+    </script>
+</body>
+</html>
